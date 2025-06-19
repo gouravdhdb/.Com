@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Meri Committee – Created by Gourav</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #ffffff);
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+    small {
+      font-size: 12px;
+      color: #555;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      transition: 0.2s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #00bcd4;
+      box-shadow: 0 0 4px #00bcd4;
+    }
+
+    button {
+      background: #00bcd4;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0097a7;
+    }
+
+    .entry {
+      background: #ffffff;
+      border: 1px solid #ddd;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    #entries {
+      margin-top: 20px;
+    }
+
+    #clearBtn {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 50px;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+
+    #clearBtn:hover {
+      background-color: #c0392b;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 22px;
+      }
+      button, input, select {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button id="clearBtn" onclick="clearEntries()">🗑️</button>
+  <br>
+  <br>
+
+  <h1>₹ Meri Committee <small>– Created by Gourav</small></h1>
+
+  <input id="member" placeholder="Member Name" />
+  <input id="amount" placeholder="Amount (₹)" type="number" />
+  <input id="month" placeholder="Month (e.g. June 2025)" />
+  <select id="type">
+    <option value="Cash">Cash</option>
+    <option value="UPI">UPI</option>
+    <option value="Bank">Bank</option>
+    <option value="Other">Other</option>
+  </select>
+  <input id="note" placeholder="Optional Note" />
+  <button onclick="addEntry()">➕ Add Entry</button>
+  <button onclick="exportText()">📄 Export as TXT</button>
+
+  <div id="entries"></div>
+
+  <script>
+    let entries = JSON.parse(localStorage.getItem('committeeEntries') || '[]');
+
+    function renderEntries() {
+      const list = document.getElementById('entries');
+      list.innerHTML = '';
+      entries.forEach((entry, i) => {
+        list.innerHTML += `
+          <div class="entry">
+            <b>#${i + 1} ${entry.member}</b><br />
+            ₹${entry.amount} for <b>${entry.month}</b><br />
+            Type: ${entry.type}<br />
+            Note: ${entry.note || '-'}
+          </div>
+        `;
+      });
+    }
+
+    function addEntry() {
+      const member = document.getElementById('member').value.trim();
+      const amount = document.getElementById('amount').value.trim();
+      const month = document.getElementById('month').value.trim();
+      const type = document.getElementById('type').value;
+      const note = document.getElementById('note').value.trim();
+
+      if (!member || !amount || !month) {
+        alert('Please fill all required fields: Member, Amount, Month.');
+        return;
+      }
+
+      const entry = { member, amount, month, type, note };
+      entries.push(entry);
+      localStorage.setItem('committeeEntries', JSON.stringify(entries));
+      renderEntries();
+
+      document.getElementById('member').value = '';
+      document.getElementById('amount').value = '';
+      document.getElementById('month').value = '';
+      document.getElementById('type').value = 'Cash';
+      document.getElementById('note').value = '';
+    }
+
+    function exportText() {
+      if (entries.length === 0) {
+        alert("No entries to export!");
+        return;
+      }
+
+      const filename = prompt("Enter file name:", "committee-report");
+      if (!filename) return;
+
+      let content = "🧾 Meri Committee – Created by Gourav\n\n";
+      entries.forEach((entry, i) => {
+        content += `#${i + 1}. ${entry.member}\n₹${entry.amount} for ${entry.month}\nType: ${entry.type}\nNote: ${entry.note || '-'}\n\n`;
+      });
+
+      const blob = new Blob([content], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename + '.txt';
+      link.click();
+    }
+
+    function clearEntries() {
+      if (confirm("Are you sure you want to clear all entries?")) {
+        entries = [];
+        localStorage.removeItem('committeeEntries');
+        renderEntries();
+      }
+    }
+
+    renderEntries();
+  </script>
+</body>
+</html>
